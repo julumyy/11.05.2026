@@ -1,5 +1,6 @@
 from src.manager import Manager
 from src.models import Parameters
+import sys
 
 
 def print_section_header(title: str):
@@ -71,3 +72,5 @@ if __name__ == '__main__':
     display_tenants(manager)
     
     print(f"\n{'=' * 70}\n")
+    
+    apartment_key = sys.argv[1]
