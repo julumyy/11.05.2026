@@ -76,23 +76,27 @@ class Manager:
             raise ValueError("Month must be between 1 and 12")
         if apartment_key not in self.apartments:
             return None
-        apartment_settlement = self.get_settlement(apartment_key, year, month)
-        if apartment_settlement is None:
-            return None
-        tenants_settlements = self.create_tenants_settlements(apartment_settlement)
-        debtors = []
-        for tenant_settlement in tenants_settlements:
-            tenant_transfers = [transfer for transfer in self.transfers if transfer.tenant == tenant_settlement.tenant and transfer.month == month and transfer.year == year]
-            total_paid = sum(transfer.amount_pln for transfer in tenant_transfers)
-            if total_paid < tenant_settlement.total_due_pln:
-                debtors.append(tenant_settlement.tenant)
-        return debtors
+        
+        apt_settlement = self.get_settlement(apartment_key, year, month)
+
+        tenant_settqlements = self.create_tenants_settlements(apt_settlement)
+
+        return [t for t in tenant_settqlements if t.total_transfers_pln < t.total_due_pln]
+        
         
     def get_annual_report(self, year: int):
         if year is None:
             raise ValueError("Year is required")
-        annual_report = {}
-        for apartment_key in self.apartments:
-            annual_report[apartment_key] = self.get_apartment_costs(apartment_key, year=year)
-        return annual_report
+        
+        total_costs = sum(bill.amount_pln for bill in self.bills if bill.settlement_year == year)
+        total_income = sum(transfer.amount_pln for transfer in self.transfers if transfer.settlement_year == year)
+        
+        if total_costs == 0 and total_income == 0:
+            return None
+    
+        return {
+            "total_costs": total_costs,
+            "total_income": total_income
+        }
+
     

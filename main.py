@@ -73,4 +73,37 @@ if __name__ == '__main__':
     
     print(f"\n{'=' * 70}\n")
     
+    if len(sys.argv) < 4:
+        print("Usage: python main.py <apartment_key> <year> <month>")
+        print("Example: python main.py apart-polanka 2024 1")
+        sys.exit(1)
+
     apartment_key = sys.argv[1]
+    year = int(sys.argv[2])
+    month = int(sys.argv[3])
+
+    params = Parameters(
+        apartments_path='data/apartments.json', 
+        bills_path='data/bills.json', 
+        tenants_path='data/tenants.json',
+        transfers_path='data/transfers.json'
+    )
+
+    manager = Manager(parameters=params)
+    manager.load_data()
+
+    apartment_settlement = manager.get_settlement(apartment_key, year, month)
+    if apartment_settlement:
+        
+        tenant_reports = manager.create_tenants_settlements(apartment_settlement)
+        if tenant_reports:
+            print(f"Settlement for {apartment_key} - {month}/{year}:")
+            #print(f"  Total Due: {format_currency(apartment_settlement.total_due_pln)}")
+            for t in tenant_reports:
+                print(f"  {t.tenant}: {format_currency(t.total_due_pln)}")
+        else:
+            print("  No tenant settlements found.")
+        
+    else:
+        print("\nNo data available for the specified apartment and period.")
+        
